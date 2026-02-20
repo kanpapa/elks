@@ -76,9 +76,10 @@ void kputchar(int ch)
 {
     if (ch == '\n')
             kputchar('\r');
-    if (kputc)
-            (*kputc)(dev_console, ch);
-    else early_putchar(ch);
+//    if (kputc)
+//            (*kputc)(dev_console, ch);
+//    else early_putchar(ch);
+    early_putchar(ch);
 }
 
 static void kputs(const char *buf)

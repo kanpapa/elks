@@ -83,6 +83,14 @@ early_putchar:
         ret
 #elif defined(CONFIG_ARCH_IBMPC) || defined(CONFIG_ARCH_8018X)
 early_putchar:
+1:      in    $0xDA,%al
+        test  $0x01,%al
+        jz    1b
+        mov   %sp,%bx
+        mov   2(%bx),%al
+        outb  %al,$0xD8        // V53 VME Serial J1
+        ret
+/*
         mov   %sp,%bx
         mov   2(%bx),%al
         mov   $0x0E,%ah
@@ -91,6 +99,7 @@ early_putchar:
         int   $0x10
         pop   %bp
         ret
+*/
 #endif
 
 //      Segment beginnings
