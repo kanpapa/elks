@@ -3,8 +3,16 @@
 #endif
 
 /* serial, serial-8018x.c */
-#define UART0_IRQ_RX  1 /* maps to interrupt type 20 */
-#define UART0_IRQ_TX  2 /* maps to interrupt type 21 */
+//#define UART0_IRQ_RX  1 /* maps to interrupt type 20 */
+//#define UART0_IRQ_TX  2 /* maps to interrupt type 21 */
+
+#define EXT_USART_IRQ_RX  11  /* 外部PIC IR3(IRQ 11): USART RxREADY */
+#define EXT_USART_IRQ_TX  12  /* 外部PIC IR4(IRQ 12): USART TxREADY */
+
+/* μPD71051 (USART) */
+#define EXT_USART_DATA    0x00D8
+#define EXT_USART_STATUS  0x00DA
+#define EXT_USART_CTRL    0x00DA  // 8251ではStatusと同一アドレスの書き込み
 
 #define CPU_VEC_DIVIDE_ERROR 0
 #define CPU_VEC_SINGLE_STEP 1
@@ -25,6 +33,9 @@
 #define CPU_VEC_TIMER2 19
 #define CPU_VEC_S0_RX 20
 #define CPU_VEC_S0_TX 21
+
+/* V53 */
+#define CPU_VEC_V53_INT39 39
 
 /* INTERRUPT CONTROL REGISTERS */
 #define PCB_EOI     0xff02

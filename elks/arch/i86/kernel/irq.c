@@ -156,8 +156,11 @@ void INITPROC irq_init(void)
     save_timer_irq();           /* save original BIOS IRQ 0 vector */
 
     /* Connect timer interrupt handler to hardware IRQ 0 */
-    if (request_irq(TIMER_IRQ, timer_tick, INT_GENERIC))
-        panic("Unable to get timer");
+    //if (request_irq(TIMER_IRQ, timer_tick, INT_GENERIC))
+    //    panic("Unable to get timer");
+
+    if (request_irq(CASCADE_IRQ, v53_external_pic_dispatcher, INT_GENERIC))
+        panic("Unable to get external PIC dispatcher");
 
     enable_timer_tick();        /* reprogram timer for 100 HZ */
 #endif

@@ -82,7 +82,17 @@
 #endif
 
 #ifdef CONFIG_ARCH_8018X
-#define TIMER_IRQ       0  /* logical IRQ number, NOT related to the actual IRQ vector! */
+//#define TIMER_IRQ       0  /* logical IRQ number, NOT related to the actual IRQ vector! */
+// V53 VMEボード の仕様
+#define TIMER_IRQ   8  /* V53 VME Board: Timer 0 is connected to External PIC IR0 */
+
+/* V53 I/O Address Definitions */
+#define V53_ICU_IMR    0x2081  /* 内部マスタ IMR (Master) */
+#define V53_ICU_OCW2   0x2080  /* 内部マスタ EOI用 */
+#define EXT_PIC_IMR    0x00CA  /* 外部スレーブ IMR (Slave) */
+#define EXT_PIC_OCW2   0x00C8  /* 外部スレーブ EOI用 */
+
+#define CASCADE_IRQ    7       /* 内部ICUの7番ピンに接続 */
 #endif
 
 #ifdef CONFIG_ARCH_NECV25

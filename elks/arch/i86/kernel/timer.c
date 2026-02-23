@@ -57,6 +57,13 @@ static void FARPROC calc_cpu_usage(void)
 
 void timer_tick(int irq, struct pt_regs *regs)
 {
+    // V53
+    /* デバッグ用：タイマーが来るたびにドットを表示 */
+    /* 100Hzだと画面が埋まるので、jiffiesの下位ビットで間引くのも手です */
+    if (!(jiffies & 0x3F)) { 
+        early_putchar('.'); 
+    }
+
     jiffies++;
 
 #ifdef CHECK_ISTACK

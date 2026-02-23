@@ -43,9 +43,24 @@ struct serial_info {
     struct tty *tty;
 };
 
+/*
+// Serial 0 (V53 VME Board)
+{
+0,                 / Baud Rate register (モニタで設定済のためダミーで設定) /
+EXT_USART_CTRL,    / Control register /
+EXT_USART_STATUS,  / Status register /
+EXT_USART_DATA,    / Receive buffer (Read) /
+EXT_USART_DATA,    / Transmit buffer (Write) /
+EXT_USART_IRQ_RX,  / RX IRQ (11) /
+EXT_USART_IRQ_TX,  / TX IRQ (12) /
+0,                 / Flags /
+&ttys[0]           / Associated TTY /
+},
+*/
 static struct serial_info ports[1] = {
-    /* Serial 0 */ { PCB_B0CMP, PCB_S0CON, PCB_S0STS, PCB_R0BUF, PCB_T0BUF, UART0_IRQ_RX, UART0_IRQ_TX, 0, &ttys[0] },
+    /* Serial 0 // { PCB_B0CMP, PCB_S0CON, PCB_S0STS, PCB_R0BUF, PCB_T0BUF, UART0_IRQ_RX, UART0_IRQ_TX, 0, &ttys[0] }, */
     /* TODO: Serial 1 not available { PCB_B1CMP, PCB_S1CON, PCB_S1STS, PCB_R1BUF, PCB_T1BUF, 0, 0, 0, NULL} */
+    /* EXT Serial 0 */ { 0, EXT_USART_CTRL, EXT_USART_STATUS, EXT_USART_DATA, EXT_USART_DATA, EXT_USART_IRQ_RX, EXT_USART_IRQ_TX, 0, &ttys[0] },
 };
 
 /* UART clock baudrate_compares per baud rate */
@@ -77,10 +92,18 @@ void irq_rx(int irq, struct pt_regs *regs)
     struct serial_info *sp = &ports[0];
 
     /* Read UART status */
-    unsigned int status = inw(sp->io_sts);
+    //unsigned int status = inw(sp->io_sts);
+    unsigned int status = inb(sp->io_sts);
 
-    if (status & 0x94) {
-        /* discard parity, framing and overrun errors */
+    // μPD71051のステータスレジスタのビット割り当て
+    // Bit 0: TxREADY (送信可能)
+    // Bit 1: RxREADY (受信完了)
+    // Bit 2: TxEMPTY (送信完了)
+    // Bit 3: PE (パリティエラー)
+    // Bit 4: OE (オーバーランエラー)
+    // Bit 5: FE (フレーミングエラー)
+    if (status & 0x38) {   /* Check for parity, framing or overrun errors */
+        // discard parity, framing and overrun errors //
         return;
     }
 
@@ -101,7 +124,8 @@ void irq_tx(int irq, struct pt_regs *regs)
 static void serial_putc(const struct serial_info *sp, byte_t c)
 {
     /* Test for TXE bit set on the status register */
-    while((inw(sp->io_sts) & 0x8) == 0);
+    //while((inw(sp->io_sts) & 0x8) == 0);
+    while((inb(sp->io_sts) & 0x1) == 0);    // V53
     /* Write the character */
     outb(c, sp->io_txbuf);
 }
@@ -109,6 +133,7 @@ static void serial_putc(const struct serial_info *sp, byte_t c)
 /* update UART with current port termios settings */
 static void update_port(struct serial_info *port)
 {
+    /*
     unsigned int cflags;
     unsigned int baudrate_compare;
     flag_t flags;
@@ -117,29 +142,34 @@ static void update_port(struct serial_info *port)
     if (cflags & CBAUDEX) {
         cflags = B38400 + (cflags & 03);
     }
+    */
     /* get which baud rate compare value is requested */
+    /*
     baudrate_compare = baudrate_compares[cflags];
 
     save_flags(flags);
     clr_irq();
-
+    */
     /* Disable receiver */
-    outw(inw(port->io_ccon) & ~0x0020, port->io_ccon);
+    //outw(inw(port->io_ccon) & ~0x0020, port->io_ccon);
 
     /* update baudrate compare only if changed, since we have not TCSETW */
+    /*
     if (baudrate_compare != port->baudrate_compare) {
         port->baudrate_compare = baudrate_compare;
-
-        /* Set the baudrate compare value, using the internal clock mask */
-        outw(baudrate_compare | 0x8000, port->io_cmp);
+        // Set the baudrate compare value, using the internal clock mask //
+        //outw(baudrate_compare | 0x8000, port->io_cmp);
     }
-
+    */
+    
     /* TODO: add hardware handshake options? */
 
     /* Enable receiver */
+    /*
     outw(inw(port->io_ccon) | 0x0020, port->io_ccon);
 
     restore_flags(flags);
+    */
 }
 
 /* Called from main.c! */
@@ -153,14 +183,14 @@ void INITPROC console_init(void)
      */
     
     /* 0x0001 = Mode 1, Asynchronous, 8 data bits, 1 start, 1 stop, no parity, no handshake */
-    outw(0x0001, sp->io_ccon);
+    //outw(0x0001, sp->io_ccon);
 
     /* setup the UART 0 (the only one that has IRQs) */
     request_irq(sp->irq_rx, irq_rx, INT_GENERIC);
     request_irq(sp->irq_tx, irq_tx, INT_GENERIC);
-
+    
     /* Set the baudrate, and enable the UART receiver */
-    update_port(sp);
+    //update_port(sp);
 
     printk("console_init: 8018X UART\n");
 }
@@ -182,8 +212,8 @@ static void sercon_conout(dev_t dev, int Ch)
 
 static int sercon_ioctl(struct tty *tty, int cmd, char *arg)
 {
-    struct serial_info *port = &ports[0]; /* TODO: add support for Serial 1 */
-
+    //struct serial_info *port = &ports[0]; /* TODO: add support for Serial 1 */
+    /*
     switch (cmd) {
     case TCSETS:
     case TCSETSW:
@@ -194,7 +224,7 @@ static int sercon_ioctl(struct tty *tty, int cmd, char *arg)
     default:
         return -EINVAL;
     }
-
+    */
     return 0;
 }
 
