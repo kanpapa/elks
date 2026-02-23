@@ -240,9 +240,9 @@ a6:     out     %al,$PIC1_CMD   // Ack on primary controller
         // 内部ICUに直接接続されている IRQ 0-7（INTP0-7）のときは、外部PIC（スレーブ）にはEOI発行をスキップ
         cmp     $8,%ax          // Send EOI to interrupt controller(s)
         mov     $0x20,%al       // EOI
-        jb      a6              // IRQ on low chip
+        jb      a7              // IRQ on low chip
         out     %al, $EXT_PIC_OCW2     // 外部PIC (Slave) へのEOI発行
-a6:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
+a7:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
         out     %al, %dx
 
 #elif defined(CONFIG_ARCH_NECV25)
