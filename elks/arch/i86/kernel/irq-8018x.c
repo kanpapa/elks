@@ -182,8 +182,7 @@ void v53_external_pic_dispatcher(int irq, struct pt_regs *regs)
     // OCW3: 0000_1011 (0x0B) -> RR=1, RIS=1 (Read ISR)
     // IRR (0x0A): 「今、どのピンに割り込み信号が届いているか」を示します。
     // ISR (0x0B): 「今、どの割り込みをCPUが実行中か」を示します。
-    //outb(0x0B, PIC_REG0);
-    outb(0x0A, EXT_PIC_OCW2);
+    outb(0x0B, EXT_PIC_OCW2);
     irr = inb(EXT_PIC_OCW2);    // AL = IRR
 
     // 2. 要因判定と分岐 ---
