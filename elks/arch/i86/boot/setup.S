@@ -85,7 +85,7 @@
 #include <linuxmt/boot.h>
 
 // Relocating loader debug option
-debug_output    =       0       // display various register values during execution
+debug_output    =		0		// display various register values during execution
 serial_output   =       0       // use INT 14 serial instead of INT 10 console out
 debug_loader    =       0       // display relocations
 
@@ -1256,8 +1256,14 @@ arch_set_initseg:
 putc:	push %bx
 	push %cx
 	push %dx
-	// TODO: send character in AL to console
-	pop %dx
+	mov %ax,%bx
+	// V53: send character in AL to console
+1:  in    $0xDA,%al
+	test  $0x01,%al
+    jz    1b
+    mov %bx,%ax
+	outb %al,$0xD8        // V53 VME Serial J1
+    pop %dx
 	pop %cx
 	pop %bx
 	ret
