@@ -153,7 +153,7 @@ void INITPROC irq_init(void)
 #else /* normal IRQ 0 timer */
     initialize_irq();           /* IRQ and/or PIC initialization */
     disable_timer_tick();       /* not needed on IBM PC as IRQ 0 vector untouched */
-    save_timer_irq();           /* save original BIOS IRQ 0 vector */
+    //save_timer_irq();           /* save original BIOS IRQ 0 vector */
 
     /* Connect timer interrupt handler to hardware IRQ 0 */
     //if (request_irq(TIMER_IRQ, timer_tick, INT_GENERIC))

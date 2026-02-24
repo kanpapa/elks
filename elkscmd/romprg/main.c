@@ -54,7 +54,7 @@ static const unsigned int baudrate_compares[] = {
 };
 
 void set_baud_rate(uint8_t idx) {
-    outw(0x8000 | baudrate_compares[idx], PCB_B0CMP);
+    //outw(0x8000 | baudrate_compares[idx], PCB_B0CMP);
 }
 
 #else

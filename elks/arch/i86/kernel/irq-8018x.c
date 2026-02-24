@@ -44,6 +44,7 @@ void initialize_irq(void)
     enable_irq(CASCADE_IRQ);
 }
 
+#if UNUSED
 struct irq_logical_map {
     unsigned int irq;           /* logical IRQ from ELKS */
     unsigned int config_word;   /* config word for the Interrupt control register */
@@ -91,6 +92,7 @@ struct irq_logical_map* get_from_logical_irq(unsigned int irq)
 
     return NULL;
 }
+#endif
 
 void enable_irq(unsigned int irq)
 {
@@ -194,4 +196,7 @@ void v53_external_pic_dispatcher(int irq, struct pt_regs *regs)
     if (irr & 0x08) {
         irq_rx(EXT_USART_IRQ_RX, regs);
     }
+
+    outb(0x20, EXT_PIC_OCW2);   // 外部PIC (Slave) へのEOI発行
+    outb(0x20, V53_ICU_OCW2);   // V53内蔵ICU (Master) へのEOI発行
 }

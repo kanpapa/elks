@@ -31,6 +31,7 @@
 
 void enable_timer_tick(void)
 {
+#if UNUSED
     /* Set Timer2 Maxcount register */
     outw(TIMER2_INTERVAL, PCB_T2CMPA);
     /* Clear the Timer count register before starting it */
@@ -46,13 +47,29 @@ void enable_timer_tick(void)
 
     /* Enable Timer1, release inhibit to change EN bit, INT enabled, use Timer2 as source, continuous mode */
     outw(0xe009, PCB_T1CON);
+#endif
+    // V53 TCU Timer 0
+    // 1. コントロールレジスタに Mode 3 (LSB/MSB) を設定
+    // 0x36 = 00(Counter 0) 11(LSB/MSB) 011(Mode 3) 0(Binary)
+    outb(0x36, V53_TM_CTL);
+
+    // 2. カウント値を LSB -> MSB の順で書き込む (100Hz設定)
+    // 1.2288MHz / 100Hz = 12288 (0x3000)
+    outb(0x00, V53_TM0_CNT); // LSB
+    outb(0x30, V53_TM0_CNT); // MSB
 }
 
 void disable_timer_tick(void)
 {
+#if UNUSED
     /* Disable Timer2, release inhibit to change EN bit */
     outw(0x4000, PCB_T2CON);
 
     /* Disable Timer1, release inhibit to change EN bit */
     outw(0x4000, PCB_T1CON);
+#endif
+    // V53 TCU Timer 0
+    // Mode 0 に設定することで、次のカウントがロードされるまで
+    // 出力を静止状態（通常は高レベル）にできます
+    outb(0x30, V53_TM_CTL); // Counter 0, LSB/MSB, Mode 0
 }

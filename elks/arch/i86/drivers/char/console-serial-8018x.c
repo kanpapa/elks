@@ -91,6 +91,10 @@ void irq_rx(int irq, struct pt_regs *regs)
 {
     struct serial_info *sp = &ports[0];
 
+    // V53
+    /* デバッグ用：シリアル受信が来るたびにアスタリスクを表示 */
+    //printk("*");
+
     /* Read UART status */
     //unsigned int status = inw(sp->io_sts);
     unsigned int status = inb(sp->io_sts);
