@@ -470,6 +470,7 @@ extern struct tty_ops rs_ops;           /* CONFIG_CHAR_DEV_RS*/
 extern struct tty_ops ttyp_ops;         /* CONFIG_PSEUDO_TTY*/
 extern struct tty_ops i8018xcon_ops;    /* CONFIG_CONSOLE_8018X*/
 extern struct tty_ops necv25con_ops;    /* CONFIG_CONSOLE_NECV25*/
+extern struct tty_ops necv53con_ops;    /* CONFIG_CONSOLE_NECV53*/
 extern struct tty_ops ps2_mouse_ops;    /* CONFIG_MOUSE_PS2*/
 
 void INITPROC tty_init(void)
@@ -493,6 +494,8 @@ void INITPROC tty_init(void)
         ttyp->ops = &i8018xcon_ops;
 #elif defined(CONFIG_CONSOLE_NECV25)
         ttyp->ops = &necv25con_ops;
+#elif defined(CONFIG_CONSOLE_NECV53)
+        ttyp->ops = &necv53con_ops;
 #else
         ttyp->ops = &headlesscon_ops;
 #endif

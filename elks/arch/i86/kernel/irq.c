@@ -124,7 +124,7 @@ void INITPROC irq_init(void)
 
 #if defined(CONFIG_ARCH_IBMPC) || defined(CONFIG_ARCH_PC98) || \
     defined(CONFIG_ARCH_SOLO86) || defined(CONFIG_ARCH_SWAN) || \
-    defined(CONFIG_ARCH_NECV25)
+    defined(CONFIG_ARCH_NECV25) || defined(CONFIG_ARCH_NECV53)
 
     irq_action[IDX_DIVZERO] = div0_handler;     /* INT 0 divide by 0/divide overflow */
     int_handler_add(IDX_DIVZERO, 0x00, _irqit);
@@ -153,15 +153,16 @@ void INITPROC irq_init(void)
 #else /* normal IRQ 0 timer */
     initialize_irq();           /* IRQ and/or PIC initialization */
     disable_timer_tick();       /* not needed on IBM PC as IRQ 0 vector untouched */
-    //save_timer_irq();           /* save original BIOS IRQ 0 vector */
+#if !defined(CONFIG_ARCH_NECV53)
+    save_timer_irq();           /* save original BIOS IRQ 0 vector */
 
     /* Connect timer interrupt handler to hardware IRQ 0 */
-    //if (request_irq(TIMER_IRQ, timer_tick, INT_GENERIC))
-    //    panic("Unable to get timer");
-
+    if (request_irq(TIMER_IRQ, timer_tick, INT_GENERIC))
+        panic("Unable to get timer");
+#else
     if (request_irq(CASCADE_IRQ, v53_external_pic_dispatcher, INT_GENERIC))
         panic("Unable to get external PIC dispatcher");
-
+#endif
     enable_timer_tick();        /* reprogram timer for 100 HZ */
 #endif
 }

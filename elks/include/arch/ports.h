@@ -82,21 +82,55 @@
 #endif
 
 #ifdef CONFIG_ARCH_8018X
-//#define TIMER_IRQ       0  /* logical IRQ number, NOT related to the actual IRQ vector! */
-// V53 VMEボード の仕様
-#define TIMER_IRQ   8  /* V53 VME Board: Timer 0 is connected to External PIC IR0 */
-
-/* V53 I/O Address Definitions */
-#define V53_ICU_IMR    0x2081  /* 内部マスタ IMR (Master) */
-#define V53_ICU_OCW2   0x2080  /* 内部マスタ EOI用 */
-#define EXT_PIC_IMR    0x00CA  /* 外部スレーブ IMR (Slave) */
-#define EXT_PIC_OCW2   0x00C8  /* 外部スレーブ EOI用 */
-
-#define CASCADE_IRQ    7       /* 内部ICUの7番ピンに接続 */
+#define TIMER_IRQ       0  /* logical IRQ number, NOT related to the actual IRQ vector! */
 #endif
 
 #ifdef CONFIG_ARCH_NECV25
 #define TIMER_IRQ       0  /* logical IRQ number, NOT related to the actual IRQ vector! */
+#endif
+
+#ifdef CONFIG_ARCH_NECV53
+/* --- Internal Peripherals (Relocated to F000H base) --- */
+#define V53_IO_BASE 0xF000
+
+/* SCU (Serial Control Unit): Configured at F060H */
+#define V53_SCU_BASE (V53_IO_BASE + 0x60)
+#define V53_SCU_DATA (V53_SCU_BASE + 0x00)
+#define V53_SCU_SST  (V53_SCU_BASE + 0x01)
+#define V53_SCU_SCM  (V53_SCU_BASE + 0x01)
+#define V53_SCU_SMD  (V53_SCU_BASE + 0x02)
+#define V53_SCU_SIMK (V53_SCU_BASE + 0x03)
+
+/* TCU (Timer/Counter Unit): Configured at F070H */
+#define V53_TCU_BASE (V53_IO_BASE + 0x70)
+#define V53_TMR_CNT0 (V53_TCU_BASE + 0x00)
+#define V53_TMR_CNT1 (V53_TCU_BASE + 0x01)
+#define V53_TMR_CNT2 (V53_TCU_BASE + 0x02)
+#define V53_TMR_CTRL (V53_TCU_BASE + 0x03)
+
+/* ICU (Interrupt Control Unit): Configured at F080H */
+#define V53_ICU_BASE (V53_IO_BASE + 0x80)
+#define V53_ICU_REG0 (V53_ICU_BASE + 0x00)
+#define V53_PIC_ICW1 (V53_ICU_BASE + 0x00)
+#define V53_ICU_OCW2 (V53_ICU_BASE + 0x00)
+#define V53_ICU_REG1 (V53_ICU_BASE + 0x01)
+#define V53_PIC_ICW2 (V53_ICU_BASE + 0x01)
+#define V53_PIC_OCW1 (V53_ICU_BASE + 0x01)
+#define V53_ICU_IMR  (V53_ICU_BASE + 0x01) // 内部マスタ IMR (Master)
+
+/* μPD71051 USART */
+#define USART_DATA    0x00D8
+#define USART_STATUS  0x00DA
+#define USART_CTRL    0x00DA
+
+/* μPD71059 PIC */
+#define PIC_REG0    0x00C8
+#define PIC_OCW2    0x00C8  /* 外部スレーブ EOI用 */
+#define PIC_REG1    0x00CA
+#define PIC_IMR     0x00CA  /* 外部スレーブ IMR (Slave) */
+
+#define TIMER_IRQ       8       /* logical IRQ number, V53 VME Board: Timer 0 is connected to External PIC IR0 */
+#define CASCADE_IRQ     7       /* PIC INTはV53 ICUのINTP7に接続 */
 #endif
 
 #ifdef CONFIG_ARCH_SWAN

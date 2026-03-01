@@ -895,3 +895,14 @@ void do_settime(struct tm *tm)
    ds3231_write(REG_YEAR,  hex_bcd(tm->tm_year));
 }
 #endif
+
+#ifdef CONFIG_ARCH_NECV53
+// The V53 VME board does not have an RTC.
+void do_gettime(struct tm *tm)
+{
+}
+
+void do_settime(struct tm *tm)
+{
+}
+#endif

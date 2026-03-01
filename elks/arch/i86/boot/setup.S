@@ -85,7 +85,7 @@
 #include <linuxmt/boot.h>
 
 // Relocating loader debug option
-debug_output    =		0		// display various register values during execution
+debug_output    =       0       // display various register values during execution
 serial_output   =       0       // use INT 14 serial instead of INT 10 console out
 debug_loader    =       0       // display relocations
 
@@ -266,6 +266,92 @@ start_os:
 	// Enable UART serial
 	mov	$0xE0,%al
 	out	%al,$0xB3
+#endif
+
+#ifdef CONFIG_ARCH_NECV53
+#include <arch/necv53.h>
+#include <arch/ports.h>
+    // ---------------------------------------------
+    // 1 リフレッシュ制御
+    // すべてSRAMなのでリフレッシュ禁止にする
+    // ---------------------------------------------
+    // リセット時の値
+    // リセット時 リフレッシュ許可/禁止：不定
+    // RFC x0-01000
+    mov $V53_RFC, %dx
+    mov $0, %al
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 2 メモリウェイト値の設定
+    // オンボードRAMは35nsなので0Waitで良さそう
+    // 拡張RAMボードは70nsなので途中1waitの領域も設定
+    // ROMは70nsなので2waitに、外部I/Oは不明のためとりあえず3waitで
+    // ---------------------------------------------
+    // リセット時の値
+    // WMB0  -111-111 16MBのメモリ空間の上位、下位で8MB
+    // WMB1  -111-111 1MBメモリ空間の上位、下位で512KB
+    // WCY0-WCY3 すべて7wait
+    //
+    mov $V53_WMB1, %dx
+    mov $0b01110011, %al // L=512KB(Onboard RAM) M=384KB(VME RAM) H=128KB(Onboard ROM)
+    out %al, %dx
+
+    mov $V53_WCY2, %dx
+    mov $0b0000000, %al	// M=0wait L=0wait
+    out %al, %dx
+
+    mov $V53_WCY3, %dx
+    mov $0b0110010, %al // IO=3wait H=2wait
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 3. システム・コントロール・レジスタ (SCTL) の設定
+    // ビット4 (SC) = 1 : 内蔵BRGを使用
+    // ビット0 (IOAG) = 1 : 8ビット・バウンダリ（連続配置）
+    //---------------------------------------------
+    mov $V53_SCTL, %dx
+    mov $0b00010001, %al 
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 4. IOアドレスの設定
+    // ---------------------------------------------
+    mov $V53_OPHA, %dx	// OPHAに 0xF0 を設定 (ベースアドレス上位8ビット)
+    mov $0xf0, %al
+    out %al, %dx
+
+    // ICU レジスタ配置アドレスの設定 (IULA) 0xF080
+    mov $V53_IULA, %dx
+    mov $0x80, %al
+    out %al, %dx
+
+    // TCU レジスタ配置アドレスの設定 (TULA) 0xF070
+    mov $V53_TULA, %dx
+    mov $0x70, %al
+    out %al, %dx
+
+    // SCU レジスタ配置アドレスの設定 (SULA) 0xF060
+    mov $V53_SULA, %dx
+    mov $0x60, %al
+    out %al, %dx
+
+    //---------------------------------------------
+    // 5. 内蔵周辺選択レジスタ (OPSEL) でSCU,ICU,TCUを有効化
+    //---------------------------------------------
+    mov $V53_OPSEL, %dx
+    in %dx, %al
+    or $0b00001110, %al  // Bit 1(ICU),Bit 2(TCU),Bit 3(SCU)をセット
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 6. ボーレートジェネレータ (BRG) の設定
+    // 38400bps設定 (fx=16MHz, factor=x16)
+    // 16,000,000/(16×38400) ≈ 26
+    // ---------------------------------------------
+    mov $V53_BRC, %dx
+    mov $26, %al
+    out %al, %dx
 #endif
 
 	push	%cs
@@ -1315,6 +1401,43 @@ putc:
    ret
 
 #endif /* CONFIG_ARCH_NECV25 */
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Architecture specific routines for NECV53
+// Based on Santiago Hormazabal CONFIG_ARCH_8018X
+//	Entry points specific for platform setup of SETUP_xxx variables (see config.h)
+//		arch_set_initseg
+//		arch_get_mem
+
+#ifdef CONFIG_ARCH_NECV53
+#include <arch/necv53.h>
+
+// Return total memory in Kbytes
+arch_get_mem:
+    mov $SETUP_MEM_KBYTES,%ax
+    ret
+
+// Set INITSEG values for 8081X architecture
+// currently hard-coded in config.h
+arch_set_initseg:
+    mov	$INITSEG,%ax
+    mov	%ax,%ds
+    ret
+
+// Write AL to console, save all other registers
+putc:	push %dx
+	push %ax
+        mov $V53_SCU_SST, %dx
+1:      inb %dx, %al
+        testb $0x01, %al  // TX Ready?
+        jz  1b
+        mov $V53_SCU_DATA, %dx
+	pop %ax
+	outb %al, %dx
+	pop %dx
+	ret
+
+#endif /* CONFIG_ARCH_NECV53 */
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Architecture specific routines for Solo/86

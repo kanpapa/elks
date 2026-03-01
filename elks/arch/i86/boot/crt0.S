@@ -81,16 +81,26 @@ early_putchar:
         pop   %ds
         pop   %bp
         ret
+#elif defined(CONFIG_ARCH_NECV53)
+#include <arch/ports.h>
+early_putchar:
+        push %bp
+        mov %sp, %bp
+        push %dx
+        push %ax
+        mov $V53_SCU_SST, %dx
+1:      inb %dx, %al
+        testb $0x01, %al  // TX Ready?
+        jz  1b
+        mov $V53_SCU_DATA, %dx
+        mov 4(%bp), %al
+        outb %al, %dx
+        pop %ax
+        pop %dx
+        pop %bp
+        ret
 #elif defined(CONFIG_ARCH_IBMPC) || defined(CONFIG_ARCH_8018X)
 early_putchar:
-1:      in    $0xDA,%al
-        test  $0x01,%al
-        jz    1b
-        mov   %sp,%bx
-        mov   2(%bx),%al
-        outb  %al,$0xD8        // V53 VME Serial J1
-        ret
-/*
         mov   %sp,%bx
         mov   2(%bx),%al
         mov   $0x0E,%ah
@@ -99,7 +109,6 @@ early_putchar:
         int   $0x10
         pop   %bp
         ret
-*/
 #endif
 
 //      Segment beginnings

@@ -95,6 +95,10 @@ void INITPROC kernel_banner_arch(void) {
     printk("NECV25 machine, cpu %d, ", arch_cpu);
 #endif
 
+#ifdef CONFIG_ARCH_NECV53
+    printk("NECV53 machine, ");
+#endif
+
 #ifdef CONFIG_ARCH_SOLO86
     printk("Solo/86 machine, ");
 #endif

@@ -60,6 +60,11 @@ ifeq ($(CONFIG_ARCH_NECV25), y)
 	SERIAL = template
 endif
 
+ifeq ($(CONFIG_ARCH_NECV53), y)
+	CONIO = necv53
+	SERIAL = template
+endif
+
 ifeq ($(CONFIG_ARCH_SWAN), y)
 	CONIO = swan
 	SERIAL = swan
@@ -80,6 +85,10 @@ endif
 
 ifdef CONFIG_CONSOLE_NECV25
 OBJS += console-serial-necv25.o serfast.o
+endif
+
+ifdef CONFIG_CONSOLE_NECV53
+OBJS += console-serial-necv53.o
 endif
 
 ifdef CONFIG_ARCH_IBMPC

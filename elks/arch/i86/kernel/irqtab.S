@@ -241,7 +241,7 @@ a6:     out     %al,$PIC1_CMD   // Ack on primary controller
         cmp     $8,%ax          // Send EOI to interrupt controller(s)
         mov     $0x20,%al       // EOI
         jb      a7              // IRQ on low chip
-        out     %al, $EXT_PIC_OCW2     // 外部PIC (Slave) へのEOI発行
+        out     %al, $PIC_OCW2     // 外部PIC (Slave) へのEOI発行
 a7:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
         out     %al, %dx
 
@@ -249,6 +249,18 @@ a7:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
         cmp     $16,%ax         // Determine if trap or interrupt
         jge     was_trap        // Traps need no reset
         .word   0x920f          // NEC V25 specific FINT (End Of Interrupt) instruction
+
+#elif defined(CONFIG_ARCH_NECV53)
+        // 16以上はトラップ（例外）なのでEOI不要
+        cmp     $16,%ax         // Determine if trap or interrupt
+        jge     was_trap        // Traps need no reset
+        // 内部ICUに直接接続されている IRQ 0-7（INTP0-7）のときは、外部PIC（スレーブ）にはEOI発行をスキップ
+        cmp     $8,%ax          // Send EOI to interrupt controller(s)
+        mov     $0x20,%al       // EOI
+        jb      a8              // IRQ on low chip
+        out     %al, $PIC_OCW2     // 外部PIC (Slave) へのEOI発行
+a8:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
+        out     %al, %dx
 
 #elif defined(CONFIG_ARCH_SOLO86)
         mov $0x1A, %dx          // Send INT done

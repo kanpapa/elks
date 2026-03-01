@@ -58,6 +58,10 @@ ifeq ($(CONFIG_ARCH_NECV25), y)
 OBJS += irq-necv25.o reset-stubs.o timer-necv25.o divzero.o nmi.o ibrk-necv25.o
 endif
 
+ifeq ($(CONFIG_ARCH_NECV53), y)
+OBJS += irq-necv53.o reset-stubs.o timer-necv53.o divzero.o nmi.o
+endif
+
 ifeq ($(CONFIG_ARCH_SWAN), y)
 OBJS += irq-swan.o reset-swan.o timer-swan.o system-swan.o divzero.o nmi.o
 else

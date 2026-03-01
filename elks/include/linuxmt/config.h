@@ -112,6 +112,23 @@
 #define IBRK_VERBOSE_MODE       1       /* 0/1 no output / output of a message on IBRK exceptions */
 #endif /* CONFIG_ARCH_NECV25 */
 
+#ifdef CONFIG_ARCH_NECV53
+#define MAX_SERIAL              2       /* max number of serial tty devices*/
+#define SETUP_VID_COLS          80      /* video # columns */
+#define SETUP_VID_LINES         25      /* video # lines */
+#define SETUP_CPU_TYPE          CPU_80186  /* processor type */
+#define SETUP_MEM_KBYTES        512     /* base memory in 1K bytes */
+#define SETUP_XMS_KBYTES        0       /* xms memory in 1K bytes */
+#define SETUP_ROOT_DEV          0x0600  /* root device ROMFS */
+#define SETUP_ELKS_FLAGS        0       /* flags for root device type */
+#define SETUP_PART_OFFSETLO     0       /* partition offset low word */
+#define SETUP_PART_OFFSETHI     0       /* partition offset high word */
+#define SYS_CAPS                0       /* no XT/AT capabilities */
+#define UTS_MACHINE             "8018x"
+#define CONFIG_8018X_FCPU       16
+#define CONFIG_8018X_EB
+#endif /* CONFIG_ARCH_NECV53 */
+
 #ifdef CONFIG_ARCH_SWAN
 #define MAX_SERIAL              1       /* max number of serial tty devices*/
 #define SETUP_VID_COLS          28      /* video # columns */
