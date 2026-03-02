@@ -3,47 +3,8 @@
 #endif
 
 /* serial, serial-8018x.c */
-//#define UART0_IRQ_RX  1 /* maps to interrupt type 20 */
-//#define UART0_IRQ_TX  2 /* maps to interrupt type 21 */
-
-#define EXT_USART_IRQ_RX  11  /* 外部PIC IR3(IRQ 11): USART RxREADY */
-#define EXT_USART_IRQ_TX  12  /* 外部PIC IR4(IRQ 12): USART TxREADY */
-
-/* μPD71051 (USART) */
-#define EXT_USART_DATA    0x00D8
-#define EXT_USART_STATUS  0x00DA
-#define EXT_USART_CTRL    0x00DA  // 8251ではStatusと同一アドレスの書き込み
-
-/* V53 TCU */
-#define V53_TM0_CNT  0x2070  // Timer 0 カウンタ
-#define V53_TM_CTL   0x2073  // タイマーコントロールレジスタ
-
-// ==========================================
-// V53 System Register
-// ==========================================
-#define V53_SCTL    0x0FFFE // システム・コントロール・レジスタ
-#define V53_OPSEL   0x0FFFD // 内蔵ペリフェラル選択レジスタ
-#define V53_OPHA    0x0FFFC // 内蔵ペリフェラル・リロケーション・レジスタ
-#define V53_DULA    0x0FFFB //
-#define V53_IULA    0x0FFFA // ICUリロケーション・レジスタ
-#define V53_TULA    0x0FFF9 // TCUリロケーション・レジスタ
-#define V53_SULA    0x0FFF8 // SCUリロケーション・レジスタ 
-#define V53_WCY4    0x0FFF6 // プログラマブル・ウェイト・サイクル数設定レジスタ4
-#define V53_WCY3    0x0FFF5 // プログラマブル・ウェイト・サイクル数設定レジスタ3
-#define V53_WCY2    0x0FFF4 // プログラマブル・ウェイト・サイクル数設定レジスタ2
-#define V53_WMB1    0x0FFF3 // プログラマブル・ウェイト・メモリ領域設定レジスタ1
-#define V53_RFC     0x0FFF2 // リフレッシュ・コントロール・レジスタ
-#define V53_SBCR    0x0FFF1 // 
-#define V53_TCKS    0x0FFF0 // タイマー・クロック選択レジスタ
-#define V53_WAC     0x0FFED // プログラマブル・ウェイト・メモリ・アドレス・コントロール・レジスタ
-#define V53_WCY0    0x0FFEC // プログラマブル・ウェイト・サイクル数設定レジスタ0
-#define V53_WCY1    0x0FFEB // プログラマブル・ウェイト・サイクル数設定レジスタ1
-#define V53_WMB0    0x0FFEA // プログラマブル・ウェイト・メモリ領域設定レジスタ0
-#define V53_BRC     0x0FFE9 // ボー・レート・カウンタ
-#define V53_BADR    0x0FFE1 // 
-#define V53_BSEL    0x0FFE0 // 
-#define V53_XAM     0x0FF80 // 
-#define V53_PGR     0x0FF00 // 
+#define UART0_IRQ_RX  1 /* maps to interrupt type 20 */
+#define UART0_IRQ_TX  2 /* maps to interrupt type 21 */
 
 #define CPU_VEC_DIVIDE_ERROR 0
 #define CPU_VEC_SINGLE_STEP 1
@@ -65,10 +26,6 @@
 #define CPU_VEC_S0_RX 20
 #define CPU_VEC_S0_TX 21
 
-/* V53 */
-//#define CPU_VEC_V53_INT39 39
-
-#if UNUSED
 /* INTERRUPT CONTROL REGISTERS */
 #define PCB_EOI     0xff02
 #define PCB_POLL	0xff04
@@ -159,4 +116,3 @@
 
 /* STEPPING ID REGISTER */
 #define PCB_STEPID  0xffbc
-#endif
