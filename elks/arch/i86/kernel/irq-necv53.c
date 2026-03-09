@@ -17,7 +17,7 @@
 
 /* プロトタイプ宣言（シリアルドライバ側で static を外したもの） */
 extern void irq_rx(int irq, struct pt_regs *regs);
-
+extern void rs_irq(int irq, struct pt_regs *regs);
 /*
 外部PIC (Slave / μPD71059):
     IR0: V53 TCU Timer 0
@@ -212,9 +212,9 @@ void v53_external_pic_dispatcher(int irq, struct pt_regs *regs)
         timer_tick(TIMER_IRQ, regs);
     }
     // シリアル受信の判定 (PIC IR3) EXT USART
-    //if (irr & 0x08) {
-    //    irq_rx(EXT_USART_IRQ_RX, regs);
-    //}
+    if (irr & 0x08) {
+        rs_irq(EXT_USART_IRQ_RX, regs);
+    }
     // シリアル受信の判定 (PIC IR5) V53 SCU
     if (irr & 0x20) {
         irq_rx(EXT_SCU_IRQ_RX, regs);

@@ -62,7 +62,7 @@ endif
 
 ifeq ($(CONFIG_ARCH_NECV53), y)
 	CONIO = necv53
-	SERIAL = template
+	SERIAL = upd71051
 endif
 
 ifeq ($(CONFIG_ARCH_SWAN), y)
