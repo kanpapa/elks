@@ -271,6 +271,8 @@ start_os:
 #ifdef CONFIG_ARCH_NECV53
 #include <arch/necv53.h>
 #include <arch/ports.h>
+
+#ifdef UNUSED
     // ---------------------------------------------
     // 1 リフレッシュ制御
     // すべてSRAMなのでリフレッシュ禁止にする
@@ -351,6 +353,108 @@ start_os:
     // ---------------------------------------------
     mov $V53_BRC, %dx
     mov $26, %al
+    out %al, %dx
+#endif
+
+    // for V53 SIO VME board
+    // ---------------------------------------------
+    // 1 システム・コントロール・レジスタ (SCTL) の設定
+    // ビット0 (IOAG) = 0 : 16ビット・バウンダリ
+    //---------------------------------------------
+    mov $V53_SCTL, %dx
+    mov $0b00000000, %al 
+    out %al, %dx
+
+    //---------------------------------------------
+    // 2. 内蔵周辺選択レジスタ (OPSEL) でICU,TCUを有効化
+    //---------------------------------------------
+    mov $V53_OPSEL, %dx
+    in %dx, %al
+    or $0b0000110, %al  // D1(ICU), D2(TCU)をセット
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 4. IOアドレスの設定
+    // ---------------------------------------------
+    mov $V53_OPHA, %dx	// OPHAに 0x00 を設定 (ベースアドレス上位8ビット)
+    mov $0x00, %al
+    out %al, %dx
+
+    // DCU レジスタ配置アドレスの設定 (DULA) 0x00E0
+    mov $V53_DULA, %dx
+    mov $0xE0, %al
+    out %al, %dx
+
+    // ICU レジスタ配置アドレスの設定 (IULA) 0x00C0
+    mov $V53_IULA, %dx
+    mov $0xC0, %al
+    out %al, %dx
+
+    // TCU レジスタ配置アドレスの設定 (TULA) 0x00D0
+    mov $V53_TULA, %dx
+    mov $0xD0, %al
+    out %al, %dx
+
+    // SCU レジスタ配置アドレスの設定 (SULA) 0x00F0
+    mov $V53_SULA, %dx
+    mov $0xF0, %al
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 5 メモリウェイト値の設定
+    // ---------------------------------------------
+    mov $V53_WMB0, %dx
+    mov $0x00, %al
+    out %al, %dx
+
+    mov $V53_WCY1, %dx
+    mov $0b0000000, %al
+    out %al, %dx
+
+    mov $V53_WCY0, %dx
+    mov $0b0000000, %al
+    out %al, %dx
+
+    mov $V53_WMB1, %dx
+    mov $0b01110011, %al // L=512KB(Onboard RAM) M=384KB(VME RAM) H=128KB(Onboard ROM)
+    out %al, %dx
+
+    mov $V53_WAC, %dx
+    mov $0x00, %al
+    out %al, %dx
+
+    mov $V53_WCY2, %dx
+    mov $0x10, %al
+    out %al, %dx
+
+    mov $V53_WCY3, %dx
+    mov $0x22, %al
+    out %al, %dx
+
+    mov $V53_WCY4, %dx
+    mov $0x10, %al
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 6 リフレッシュ制御
+    // ---------------------------------------------
+    mov $V53_RFC, %dx
+    mov $0, %al
+    out %al, %dx
+
+    // ---------------------------------------------
+    // 7. ボーレートジェネレータ (BRG) の設定
+    // ---------------------------------------------
+    mov $V53_BRC, %dx
+    mov $0, %al
+    out %al, %dx
+
+    mov $V53_TCKS, %dx
+    mov $0x02, %al
+    out %al, %dx
+
+    mov $V53_SBCR, %dx
+    mov $0, %al
     out %al, %dx
 #endif
 
@@ -1424,6 +1528,7 @@ arch_set_initseg:
     mov	%ax,%ds
     ret
 
+#ifdef UNUSED
 // Write AL to console, save all other registers
 putc:	push %dx
 	push %ax
@@ -1432,6 +1537,19 @@ putc:	push %dx
         testb $0x01, %al  // TX Ready?
         jz  1b
         mov $V53_SCU_DATA, %dx
+	pop %ax
+	outb %al, %dx
+	pop %dx
+	ret
+#endif
+// Write AL to console, save all other registers
+putc:	push %dx
+	push %ax
+        mov $MPSC1_A_CTRL, %dx
+1:      inb %dx, %al
+        testb $MPSC_TX_READY, %al  // TX Ready?
+        jz  1b
+        mov $MPSC1_A_DATA, %dx
 	pop %ax
 	outb %al, %dx
 	pop %dx

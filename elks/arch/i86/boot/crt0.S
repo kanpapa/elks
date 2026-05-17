@@ -88,11 +88,21 @@ early_putchar:
         mov %sp, %bp
         push %dx
         push %ax
-        mov $V53_SCU_SST, %dx
+// V53_SCU
+//        mov $V53_SCU_SST, %dx
+//1:      inb %dx, %al
+//        testb $0x01, %al  // TX Ready?
+//        jz  1b
+//        mov $V53_SCU_DATA, %dx
+//        mov 4(%bp), %al
+//        outb %al, %dx
+
+// uPD72001
+        mov $MPSC1_A_CTRL, %dx
 1:      inb %dx, %al
-        testb $0x01, %al  // TX Ready?
+        testb $MPSC_TX_READY, %al  // TX Ready?
         jz  1b
-        mov $V53_SCU_DATA, %dx
+        mov $MPSC1_A_DATA, %dx
         mov 4(%bp), %al
         outb %al, %dx
         pop %ax

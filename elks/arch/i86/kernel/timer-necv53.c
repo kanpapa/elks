@@ -31,6 +31,7 @@
 
 void enable_timer_tick(void)
 {
+#ifdef UNUSED
     // TCKS: タイマクロック入力選択
     outb(0b00011100, V53_TCKS);  // Timer 1: TCLK端子入力使用
 
@@ -43,6 +44,32 @@ void enable_timer_tick(void)
     // 1.2288MHz / 100Hz = 12288 (0x3000)
     outb(0x00, V53_TMR_CNT0); // LSB
     outb(0x30, V53_TMR_CNT0); // MSB
+#endif
+    // for uPD72001 SIO Board
+    // V53 TCU Timer 0
+    // 1. コントロールレジスタに Mode 3 (LSB/MSB) を設定
+    // 0x36 = 00(Counter 0) 11(LSB/MSB) 011(Mode 3) 0(Binary)
+    outb(0x36, V53_TMR_CTRL);
+
+    // 2. カウント値を LSB -> MSB の順で書き込む (100Hz設定)
+    outb(0x20, V53_TMR_CNT0); // LSB
+    outb(0x4E, V53_TMR_CNT0); // MSB
+
+    // V53 TCU Timer 1
+    // 1. コントロールレジスタに Mode 3 (LSB/MSB) を設定
+    outb(0x70, V53_TMR_CTRL);
+
+    // 2. カウント値を LSB -> MSB の順で書き込む (100Hz設定)
+    outb(0x05, V53_TMR_CNT1); // LSB
+    outb(0x0D, V53_TMR_CNT1); // MSB
+
+    // V53 TCU Timer 2
+    // 1. コントロールレジスタに Mode 3 (LSB/MSB) を設定
+    outb(0xB0, V53_TMR_CTRL);
+
+    // 2. カウント値を LSB -> MSB の順で書き込む (100Hz設定)
+    outb(0x05, V53_TMR_CNT2); // LSB
+    outb(0x0D, V53_TMR_CNT2); // MSB
 }
 
 void disable_timer_tick(void)

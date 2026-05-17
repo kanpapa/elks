@@ -24,15 +24,27 @@ void conio_init(void)
  */
 int conio_poll(void)
 {
+
+#ifdef UNUSED
     /* S0STS bit 0x40 RI (receive interrupt) */
     if (inb(V53_SCU_SST) & 0x2) {
         return inb(V53_SCU_DATA); /* R0BUF */
+    }
+#endif
+
+    /* for uPD72001 V53 SIO Board */
+    if (inb(MPSC1_A_CTRL) & MPSC_RX_READY) {
+        return inb(MPSC1_A_DATA);
     }
     return 0;
 }
 
 void conio_putc(byte_t c)
 {
+#ifdef UNUSED
     while((inb(V53_SCU_SST) & 0x01) == 0);	/* TXREADY */
     outb(c, V53_SCU_DATA);			/* DATABUF */
+#endif
+    while((inb(MPSC1_A_CTRL) & MPSC_TX_READY) == 0);	/* TXREADY */
+    outb(c, MPSC1_A_DATA);			/* DATABUF */
 }

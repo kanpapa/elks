@@ -11,6 +11,14 @@
 #define EXT_SCU_IRQ_RX  13  /* 外部PIC IR5(IRQ 13): V53 SCU RxREADY */
 #define EXT_SCU_IRQ_TX  14  /* 外部PIC IR6(IRQ 14): V53 SCU TxREADY */
 
+/* uPD72001 defines */
+// INT 0x2e MPSC#1 Ch.A 受信割り込みハンドラ
+#define EXT_MPSC1_IRQ_RX 14 
+#define EXT_MPSC1_IRQ_TX 15   // not used. it's dummy
+// INT 0x36 MPSC#2 Ch.A 受信割り込みハンドラ
+//#define EXT_MPSC2_IRQ_RX 0x36
+//#define EXT_MPSC2_IRQ_TX 0x37   // not used. it's dummy
+
 /* μPD71059 (PIC) */
 //#define EXT_PIC_IMR     0x00CA  /* 外部スレーブ IMR (Slave) */
 //#define EXT_PIC_OCW2    0x00C8  /* 外部スレーブ EOI用 */

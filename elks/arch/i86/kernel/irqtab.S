@@ -251,7 +251,8 @@ a7:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
         .word   0x920f          // NEC V25 specific FINT (End Of Interrupt) instruction
 
 #elif defined(CONFIG_ARCH_NECV53)
-        // 16以上はトラップ（例外）なのでEOI不要
+#ifdef UNUSED
+        // IRQ 16以上はトラップ（例外）なのでEOI不要
         cmp     $16,%ax         // Determine if trap or interrupt
         jge     was_trap        // Traps need no reset
         // 内部ICUに直接接続されている IRQ 0-7（INTP0-7）のときは、外部PIC（スレーブ）にはEOI発行をスキップ
@@ -261,7 +262,27 @@ a7:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
         out     %al, $PIC_OCW2     // 外部PIC (Slave) へのEOI発行
 a8:     mov     $V53_ICU_OCW2, %dx     // V53内蔵ICU (Master) へのEOI発行
         out     %al, %dx
+#endif
 
+        // for uPD72001 SIO Board
+        // 16以上はトラップ（例外）なのでEOI不要
+        cmp     $16, %ax        // Determine if trap or interrupt
+        jge     was_trap        // Traps need no reset
+
+        // IRQ 8-15: MPSCにEOIを発行
+        cmp     $8, %ax
+        jge     icu_eoi
+        mov     $MPSC1_A_CTRL, %dx
+        mov     $0x38, %al
+        out     %al, %dx
+        jmp     was_trap
+
+        // IRQ 0-7: V53 ICUにEOIを発行
+icu_eoi:
+        mov     $0x20, %al      // EOI command
+        mov     $V53_ICU_OCW2, %dx
+        out     %al, %dx
+        
 #elif defined(CONFIG_ARCH_SOLO86)
         mov $0x1A, %dx          // Send INT done
         out %al, %dx

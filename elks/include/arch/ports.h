@@ -90,6 +90,8 @@
 #endif
 
 #ifdef CONFIG_ARCH_NECV53
+
+#ifdef UNUSED
 /* --- Internal Peripherals (Relocated to F000H base) --- */
 #define V53_IO_BASE 0xF000
 
@@ -131,6 +133,42 @@
 
 #define TIMER_IRQ       8       /* logical IRQ number, V53 VME Board: Timer 0 is connected to External PIC IR0 */
 #define CASCADE_IRQ     7       /* PIC INTはV53 ICUのINTP7に接続 */
+
+#endif // UNUSED
+
+/* --- Internal Peripherals (Relocated to F000H base) --- */
+#define V53_IO_BASE 0x0000
+
+/* TCU (Timer/Counter Unit): Configured at 00D0H */
+#define V53_TCU_BASE (V53_IO_BASE + 0xD0)
+#define V53_TMR_CNT0 (V53_TCU_BASE + 0x00)
+#define V53_TMR_CNT1 (V53_TCU_BASE + 0x02)
+#define V53_TMR_CNT2 (V53_TCU_BASE + 0x04)
+#define V53_TMR_CTRL (V53_TCU_BASE + 0x06)
+
+/* ICU (Interrupt Control Unit): Configured at 00C0H */
+#define V53_ICU_BASE (V53_IO_BASE + 0xC0)
+#define V53_ICU_REG0 (V53_ICU_BASE + 0x00)
+#define V53_PIC_ICW1 (V53_ICU_BASE + 0x00)
+#define V53_ICU_OCW2 (V53_ICU_BASE + 0x00)
+#define V53_ICU_REG1 (V53_ICU_BASE + 0x02)
+#define V53_PIC_ICW2 (V53_ICU_BASE + 0x02)
+#define V53_PIC_OCW1 (V53_ICU_BASE + 0x02)
+#define V53_ICU_IMR  (V53_ICU_BASE + 0x02) // 内部マスタ IMR (Master)
+
+/* uPD72001 defines */
+#define MPSC1_A_DATA 0x00A0
+#define MPSC1_A_CTRL 0x00A2
+#define MPSC1_B_DATA 0x00A4
+#define MPSC1_B_CTRL 0x00A6
+#define MPSC2_A_DATA 0x00A8
+#define MPSC2_A_CTRL 0x00AA
+#define MPSC2_B_DATA 0x00AC
+#define MPSC2_B_CTRL 0x00AE
+#define MPSC_TX_READY 0x04
+#define MPSC_RX_READY 0x01
+
+#define TIMER_IRQ       0       /* logical IRQ number, V53 SIO Board: Timer 0 is connected to V53 ICU INTP0 */
 #endif
 
 #ifdef CONFIG_ARCH_SWAN

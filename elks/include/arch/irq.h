@@ -31,7 +31,9 @@ void idle_halt(void);
 void div0_handler(int irq, struct pt_regs *regs);
 void nmi_handler(int irq, struct pt_regs *regs);
 void ibrk_handler(int irq, struct pt_regs *regs); /* NEC V25 specific IO Break handler */
+#ifdef UNUSED
 void v53_external_pic_dispatcher(int irq, struct pt_regs *regs);
+#endif
 
 /* irq-8259.c, irq-8018x.c, irq-necv25.c */
 void initialize_irq(void);

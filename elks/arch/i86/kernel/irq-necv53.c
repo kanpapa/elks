@@ -29,6 +29,27 @@ extern void rs_irq(int irq, struct pt_regs *regs);
     INTP7: 外部PICからの集約信号
 */
 
+/*
+ IRQ map for V53 SIO Board
+
+    IRQ 0 : INTP0: INT 0x20: V53 TCU Timer 0
+    IRQ 1 : INTP1:
+    IRQ 2 : INTP2:
+    IRQ 3 : INTP3:
+    IRQ 4 : INTP4: Slave   : uPD72001 #1 INT
+    IRQ 5 : INTP5: Slave   : uPD72001 #2 INT
+    IRQ 6 : INTP6:
+    IRQ 7 : INTP7:
+    IRQ 8 : MPSC1: INT 0x28 : MPSC1 ch.B 
+    IRQ 9 : MPSC1: INT 0x29 : MPSC1 ch.B
+    IRQ 10: MPSC1: INT 0x2a : MPSC1 ch.B
+    IRQ 11: MPSC1: INT 0x2b : MPSC1 ch.B
+    IRQ 12: MPSC1: INT 0x2c : MPSC1 ch.A
+    IRQ 13: MPSC1: INT 0x2d : MPSC1 ch.A
+    IRQ 14: MPSC1: INT 0x2e : MPSC1 ch.A RX
+    IRQ 15: MPSC1: INT 0x2f : MPSC1 ch.A
+
+*/
 
 /*
  *  Low level interrupt handling for the X86 8018X platforms
@@ -36,6 +57,7 @@ extern void rs_irq(int irq, struct pt_regs *regs);
 
 void initialize_irq(void)
 {
+#ifdef UNUSED
     //------------------------------------------
     // μPD71059 (PIC) 初期化
     //------------------------------------------
@@ -60,6 +82,18 @@ void initialize_irq(void)
 
     /* 外部PICを有効にするためマスタのINTP7をオープンにする */
     enable_irq(CASCADE_IRQ);
+#endif
+    // for uPD72001 SIO Board
+    //------------------------------------------
+    // V53 ICUの設定
+    //------------------------------------------
+    outb(0x11, V53_ICU_REG0); // IIW1: 00010001b (Edge Trigger, カスケード拡張モード, IIW4有効)
+    outb(0x20, V53_ICU_REG1); // IIW2: 00100000b (Vector Offset = 0x20 (INT 32))
+    outb(0x30, V53_ICU_REG1); // IIW3: 00110000b (INTP4, INTP5はスレーブ接続)
+    outb(0x03, V53_ICU_REG1); // IIW4: 00000011b (通常ネストモード、通常FIモード、8086モード)
+
+    //outb(0xce, V53_ICU_REG1); // IMKW: 11001110b (INTP4, INTP5, INTP0以外はマスクする) 
+    outb(0xce, V53_ICU_REG1); // IMKW: 11101110b (INTP4, INTP0以外はマスクする)     
 }
 
 #if UNUSED
@@ -127,6 +161,8 @@ void enable_irq(unsigned int irq)
     unsigned char mask;
 
     mask = ~(1 << (irq & 7));
+
+#ifdef UNUSED
     if (irq < 8) {
         /* 内部ICU直結デバイスの制御 */
         outb(inb(V53_ICU_IMR) & mask, V53_ICU_IMR);
@@ -138,13 +174,22 @@ void enable_irq(unsigned int irq)
         unsigned char master_mask = ~(1 << CASCADE_IRQ);
         outb(inb(V53_ICU_IMR) & master_mask, V53_ICU_IMR);
     }
+#endif
+    // for uPD72001
+    if (irq < 8) {
+        /* 内部ICU直結デバイスの制御 */
+        outb(inb(V53_ICU_IMR) & mask, V53_ICU_IMR);
+    } else {
+        /* MPSCがつながっているINTP4を有効化（一度行えばOKだが念のため実行） */
+        unsigned char master_mask = ~(1 << 4);
+        outb(inb(V53_ICU_IMR) & master_mask, V53_ICU_IMR);
+    }
 }
 
 int remap_irq(int irq)
 {
     /* no remaps */
     //return irq;
-    
     /* V53: IRQ 0-15 をそのまま使用するため、単純に範囲チェックのみ行う */
     if ((unsigned int)irq > 15) return -1;
     return irq;
@@ -168,11 +213,18 @@ void disable_irq(unsigned int irq)
 
     save_flags(flags);
     clr_irq();
+#ifdef UNUSED
     if (irq < 8) {
         // V53: IRQ 0-15 をそのまま使用するため、単純にマスクビットをセットするだけでOK
         outb(inb(V53_ICU_IMR) | mask, V53_ICU_IMR);
     } else {
         outb(inb(PIC_IMR) | mask, PIC_IMR);
+    }
+#endif
+    // for uPD72001
+    if (irq < 8) {
+        // V53: IRQ 0-7 をそのまま使用するため、単純にマスクビットをセットするだけでOK
+        outb(inb(V53_ICU_IMR) | mask, V53_ICU_IMR);
     }
     restore_flags(flags);
 }
@@ -194,6 +246,7 @@ int irq_vector(int irq)
     return irq + 0x20;
 }
 
+#ifdef UNUSED
 void v53_external_pic_dispatcher(int irq, struct pt_regs *regs)
 {
     unsigned char irr;
@@ -223,3 +276,4 @@ void v53_external_pic_dispatcher(int irq, struct pt_regs *regs)
     outb(0x20, PIC_OCW2);   // 外部PIC (Slave) へのEOI発行
     outb(0x20, V53_ICU_OCW2);   // V53内蔵ICU (Master) へのEOI発行
 }
+#endif
